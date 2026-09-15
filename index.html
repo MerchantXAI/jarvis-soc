@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JARVIS // Cyber-SOC Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-[#030712] text-cyan-400 font-mono p-6">
+    <div id="root" class="max-w-4xl mx-auto border border-cyan-500/30 rounded-xl p-6 bg-black/40 backdrop-blur-md">
+        <h1 class="text-xl font-bold tracking-widest text-cyan-300 mb-4">JARVIS // CYBER-SOC ANALYST</h1>
+        <textarea id="promptInput" class="w-full bg-black/60 border border-cyan-500/40 rounded p-4 text-cyan-200 focus:outline-none mb-4" rows="4" placeholder="Paste logs or type query..."></textarea>
+        <button onclick="runAudit()" class="w-full bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400 text-cyan-300 font-bold py-3 rounded">EXECUTE SECURITY AUDIT</button>
+        <div id="resultBox" class="mt-6 p-4 border border-cyan-500/30 rounded bg-cyan-950/20 text-cyan-100 whitespace-pre-wrap hidden"></div>
+    </div>
+    <script>
+        async function runAudit() {
+            const prompt = document.getElementById('promptInput').value;
+            const resultBox = document.getElementById('resultBox');
+            resultBox.classList.remove('hidden');
+            resultBox.innerText = "ANALYZING THREAT VECTORS...";
+
+            const res = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt })
+            });
+            const data = await res.json();
+            resultBox.innerText = data.analysis;
+        }
+    </script>
+</body>
+</html>
