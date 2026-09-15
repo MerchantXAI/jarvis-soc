@@ -3,30 +3,330 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JARVIS // Cyber-SOC Command Center</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="min-h-screen bg-[#030712] text-cyan-400 font-mono p-6">
-    <div id="root" class="max-w-4xl mx-auto border border-cyan-500/30 rounded-xl p-6 bg-black/40 backdrop-blur-md">
-        <h1 class="text-xl font-bold tracking-widest text-cyan-300 mb-4">JARVIS // CYBER-SOC ANALYST</h1>
-        <textarea id="promptInput" class="w-full bg-black/60 border border-cyan-500/40 rounded p-4 text-cyan-200 focus:outline-none mb-4" rows="4" placeholder="Paste logs or type query..."></textarea>
-        <button onclick="runAudit()" class="w-full bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400 text-cyan-300 font-bold py-3 rounded">EXECUTE SECURITY AUDIT</button>
-        <div id="resultBox" class="mt-6 p-4 border border-cyan-500/30 rounded bg-cyan-950/20 text-cyan-100 whitespace-pre-wrap hidden"></div>
-    </div>
-    <script>
-        async function runAudit() {
-            const prompt = document.getElementById('promptInput').value;
-            const resultBox = document.getElementById('resultBox');
-            resultBox.classList.remove('hidden');
-            resultBox.innerText = "ANALYZING THREAT VECTORS...";
+    <title>JARVIS-SOC // Cyber Command Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #030712;
+            --panel-bg: rgba(13, 27, 42, 0.75);
+            --neon-cyan: #00f0ff;
+            --neon-red: #ff0055;
+            --neon-green: #00ff66;
+            --text-main: #c0d8d8;
+            --border-color: rgba(0, 240, 255, 0.3);
+        }
 
-            const res = await fetch('/api/analyze', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt })
-            });
-            const data = await res.json();
-            resultBox.innerText = data.analysis;
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* CRT Scanline Overlay */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 99999;
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+
+        header {
+            border-bottom: 2px solid var(--neon-cyan);
+            padding: 1.2rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(3, 7, 18, 0.9);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px var(--neon-cyan);
+            letter-spacing: 2px;
+        }
+
+        .status-badge {
+            font-size: 0.85rem;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            background: rgba(0, 255, 102, 0.05);
+            box-shadow: 0 0 8px rgba(0, 255, 102, 0.3);
+            text-transform: uppercase;
+        }
+
+        .main-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        @media (max-width: 1024px) {
+            .main-container { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: inset 0 0 15px rgba(0, 240, 255, 0.05);
+        }
+
+        .panel::after {
+            content: "";
+            position: absolute;
+            top: 0; right: 0;
+            border-width: 0 15px 15px 0;
+            border-style: solid;
+            border-color: var(--neon-cyan) transparent;
+        }
+
+        h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            color: var(--neon-cyan);
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            height: 250px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--border-color);
+            color: #79c0ff;
+            padding: 1rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.95rem;
+            resize: vertical;
+            outline: none;
+            border-radius: 2px;
+            margin-bottom: 1rem;
+        }
+
+        textarea:focus {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+        }
+
+        button {
+            flex: 1;
+            background: transparent;
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 0.8rem;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+        }
+
+        button:hover {
+            background: var(--neon-cyan);
+            color: var(--bg-color);
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+
+        button.secondary {
+            border-color: var(--neon-red);
+            color: var(--neon-red);
+            box-shadow: 0 0 10px rgba(255, 0, 85, 0.2);
+        }
+
+        button.secondary:hover {
+            background: var(--neon-red);
+            color: var(--bg-color);
+            box-shadow: 0 0 20px var(--neon-red);
+        }
+
+        .output-screen {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--border-color);
+            padding: 1.2rem;
+            overflow-y: auto;
+            max-height: 500px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            position: relative;
+        }
+
+        /* Typewriter blinking cursor */
+        .cursor::after {
+            content: "▋";
+            color: var(--neon-cyan);
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Cyber radar sweep animation line */
+        .radar-line {
+            height: 2px;
+            width: 100%;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+            position: absolute;
+            top: 0;
+            left: 0;
+            animation: scan 3s linear infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes scan {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">JARVIS // SOC-COMMAND</div>
+        <div class="status-badge" id="sysStatus">SYSTEM ONLINE</div>
+    </header>
+
+    <div class="main-container">
+        <!-- Input Panel -->
+        <div class="panel">
+            <h2>[ INGESTION TERMINAL ]</h2>
+            <textarea id="logInput" placeholder="Paste server syslog, WAF dump, or CloudTrail JSON here..."></textarea>
+            <div class="btn-group">
+                <button onclick="executeAudit()">Execute Threat Audit</button>
+                <button class="secondary" onclick="clearTerminal()">Clear Buffer</button>
+            </div>
+        </div>
+
+        <!-- Output Panel -->
+        <div class="panel" style="overflow:hidden;">
+            <div class="radar-line"></div>
+            <h2>[ THREAT INTELLIGENCE STREAM ]</h2>
+            <div id="outputScreen" class="output-screen">Awaiting telemetry logs for analysis...</div>
+        </div>
+    </div>
+
+    <script>
+        // Web Audio API Sound Synthesizer (No external assets required)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playBeep(freq = 440, type = 'sine', duration = 0.05) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playClickSound() {
+            playBeep(800, 'square', 0.03);
+        }
+
+        function playSuccessSound() {
+            setTimeout(() => playBeep(523.25, 'sine', 0.08), 0);
+            setTimeout(() => playBeep(659.25, 'sine', 0.08), 80);
+            setTimeout(() => playBeep(783.99, 'sine', 0.15), 160);
+        }
+
+        async function executeAudit() {
+            const prompt = document.getElementById('logInput').value.trim();
+            const outputScreen = document.getElementById('outputScreen');
+            
+            if (!prompt) {
+                outputScreen.innerText = "ERROR: Ingestion buffer is empty. Provide log telemetry.";
+                playBeep(150, 'sawtooth', 0.2);
+                return;
+            }
+
+            playClickSound();
+            outputScreen.innerText = "INITIALIZING SECURE HANDSHAKE WITH GROQ LLM...\nANALYZING THREAT VECTORS...";
+            outputScreen.classList.add('cursor');
+
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const data = await response.json();
+                outputScreen.innerText = ""; // Clear for typewriter effect
+                playSuccessSound();
+
+                // Stream Typewriter Animation Effect
+                let textToStream = data.analysis || "No intelligence returned.";
+                let i = 0;
+                
+                function typeWriter() {
+                    if (i < textToStream.length) {
+                        outputScreen.innerText += textToStream.charAt(i);
+                        i++;
+                        outputScreen.scrollTop = outputScreen.scrollHeight;
+                        if (i % 5 === 0) playBeep(1200, 'sine', 0.01); // Subtle typing clicks
+                        setTimeout(typeWriter, 5);
+                    } else {
+                        outputScreen.classList.remove('cursor');
+                    }
+                }
+                typeWriter();
+
+            } catch (err) {
+                outputScreen.classList.remove('cursor');
+                outputScreen.innerText = "CRITICAL ERROR: Failed to reach backend handler -> " + err.message;
+                playBeep(150, 'sawtooth', 0.3);
+            }
+        }
+
+        function clearTerminal() {
+            playClickSound();
+            document.getElementById('logInput').value = "";
+            document.getElementById('outputScreen').innerText = "Awaiting telemetry logs for analysis...";
+            document.getElementById('outputScreen').classList.remove('cursor');
         }
     </script>
 </body>
