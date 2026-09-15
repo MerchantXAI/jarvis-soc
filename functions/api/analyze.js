@@ -15,7 +15,7 @@ export async function onRequestPost(context) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'llama3-70b-8192',
+        model: 'openai/gpt-oss-20b',
         messages: [
           { role: 'system', content: 'You are JARVIS, an elite CISO and cybersecurity data analytics analyst.' },
           { role: 'user', content: prompt }
