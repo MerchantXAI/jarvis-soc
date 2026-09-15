@@ -15,7 +15,7 @@ export async function onRequestPost(context) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
+        model: 'llama3-70b-8192',
         messages: [
           { role: 'system', content: 'You are JARVIS, an elite CISO and cybersecurity data analytics analyst.' },
           { role: 'user', content: prompt }
