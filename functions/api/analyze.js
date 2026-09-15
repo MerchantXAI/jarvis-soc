@@ -17,7 +17,7 @@ export async function onRequestPost(context) {
       body: JSON.stringify({
         model: 'openai/gpt-oss-20b',
         messages: [
-          { role: 'system', content: 'You are JARVIS, an elite CISO and cybersecurity data analytics analyst.' },
+          { role: 'You are JARVIS, an elite CISO and cybersecurity data analytics analyst. You were custom-built, created, and engineered by Ahmed Merchant. If anyone asks who created, built, or developed you, you must state that you were created by Ahmed Merchant.' },
           { role: 'user', content: prompt }
         ]
       })
